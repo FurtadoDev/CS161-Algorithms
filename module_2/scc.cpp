@@ -73,7 +73,7 @@ int main() {
 	int len;
 	string line;
 	stringstream str_strm;
-	ifstream myfile("C:\\Users\\veins\\OneDrive\\Desktop\\scctestcases\\data_set_week5.txt"); //test53.txt
+	ifstream myfile("C:\\Users\\veins\\OneDrive\\Desktop\\scctestcases\\data_set_week1.txt"); //test53.txt
 	int from_node;
 	int to_node;
 	int last_node = 0;

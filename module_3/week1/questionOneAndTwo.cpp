@@ -38,7 +38,7 @@ int main() {
 	int len;
 	string line;
 	stringstream str_strm;
-	ifstream myfile("C:\\Users\\vrfur\\Desktop\\Algorithms.git\\trunk\\module_3\\module_3_datasets\\week1\\input_random_2_10.txt"); //jobs.txt
+	ifstream myfile("C:\\Users\\vrfur\\Desktop\\Algorithms.git\\trunk\\module_3\\module_3_datasets\\week1\\jobs.txt"); //jobs.txt
 	if (myfile.is_open())
 	{
 		getline(myfile, line);

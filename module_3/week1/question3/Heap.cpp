@@ -9,42 +9,38 @@ Heap::Heap(vector<pair<int, int>> inputVector) {
 }
 
 void Heap::build_min_heap() {
-	//TODO: check to see if the size is more than 1
-	size_t lim = heap_vector_size/2;
-	for (int i = lim - 1; i >= 0; i--) {
-		min_heapify(i);
+	size_t lim;
+	if (heap_vector_size >= 2) {
+		lim = heap_vector_size / 2;
+		for (int i = lim - 1; i >= 0; i--) {
+			bubbleDown(i);
+		}
 	}
 }
 
-void Heap::build_max_heap() {
-
-}
-
-void Heap::min_heapify(size_t parentIdx) {
+void Heap::bubbleDown(size_t parentIdx) {
 	size_t leftChildIdx = getLeftChildPosition(parentIdx);
 	size_t rightChildIdx = getRightChildPosition(parentIdx);
 	size_t minIdx;
 
 	vertex_positions[heap_vector[parentIdx].first] = parentIdx;
-	if (rightChildIdx <= heap_vector_size-1) {//it has both nodes
-		vertex_positions[heap_vector[leftChildIdx].first] = leftChildIdx;
-		vertex_positions[heap_vector[rightChildIdx].first] = rightChildIdx;
-		minIdx = getIndexForMinimumValue(parentIdx, leftChildIdx, rightChildIdx);
-		if (minIdx != parentIdx) {
-			swap(parentIdx, minIdx);
-			min_heapify(minIdx);
+	if (leftChildIdx <= heap_vector_size - 1) {
+		if (rightChildIdx <= heap_vector_size - 1) {//it has both nodes
+			vertex_positions[heap_vector[leftChildIdx].first] = leftChildIdx;
+			vertex_positions[heap_vector[rightChildIdx].first] = rightChildIdx;
+			minIdx = getIndexForMinimumValue(parentIdx, leftChildIdx, rightChildIdx);
+			if (minIdx != parentIdx) {
+				swap(parentIdx, minIdx);
+				bubbleDown(minIdx);
+			}
 		}
-	}
-	else if (leftChildIdx <= heap_vector_size - 1) {//it only has the left node
-		vertex_positions[heap_vector[leftChildIdx].first] = leftChildIdx;
-		if (heap_vector[leftChildIdx].second < heap_vector[parentIdx].second) {
-			swap(leftChildIdx, parentIdx);
-			min_heapify(leftChildIdx);
+		else {//it has only one node
+			vertex_positions[heap_vector[leftChildIdx].first] = leftChildIdx;
+			if (heap_vector[leftChildIdx].second < heap_vector[parentIdx].second) {
+				swap(leftChildIdx, parentIdx);
+				bubbleDown(leftChildIdx);
+			}
 		}
-
-	}
-	else {
-		//it has no child nodes : do nothing
 	}
 }
 
@@ -131,23 +127,46 @@ void Heap::bubbleUp(size_t childIdx) {
 	}
 }
 
-void Heap::bubbleDown(size_t parentIdx) {
-	min_heapify(parentIdx);
-}
-
 
 void Heap::insertNodeIntoHeap(pair<int, int> newnodeandkey) {
 	//increase the size after inserting and assign position
 	heap_vector.push_back(newnodeandkey);
 	vertex_positions[newnodeandkey.first] = heap_vector_size;
 	heap_vector_size++;
-	bubbleUp(heap_vector_size-1);
+	if(heap_vector_size >= 2)
+		bubbleUp(heap_vector_size-1);
 }
 
 
 void Heap::deleteNodeFromHeap(size_t indexToRemove) {
 	//delete from veretex position and reduce the size
-	heap_vector.pop_back();
-	heap_vector_size--;
-	vertex_positions.erase();
+	size_t parentIdx;
+	size_t leftChildIdx;
+	size_t rightChildIdx;
+
+	if (indexToRemove == heap_vector_size-1) {
+		vertex_positions.erase(heap_vector[indexToRemove].first);
+		heap_vector.pop_back();
+		heap_vector_size--;
+	}
+	else if(indexToRemove == 0){
+		vertex_positions.erase(heap_vector[indexToRemove].first);
+		swap(indexToRemove, heap_vector_size - 1);
+		bubbleDown(indexToRemove);
+		heap_vector.pop_back();
+		heap_vector_size--;
+	}
+	else {//index is neither the first or the last element in the vector.
+		vertex_positions.erase(heap_vector[indexToRemove].first);
+		swap(indexToRemove, heap_vector_size - 1);
+		parentIdx = getParentPosition(indexToRemove);
+		if (heap_vector[indexToRemove].second < heap_vector[parentIdx].second) {
+			bubbleUp(indexToRemove);
+		}
+		else {
+			bubbleDown(indexToRemove);
+		}
+		heap_vector.pop_back();
+		heap_vector_size--;
+	}
 }

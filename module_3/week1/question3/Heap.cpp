@@ -131,8 +131,8 @@ void Heap::bubbleUp(size_t childIdx) {
 void Heap::insertNodeIntoHeap(pair<int, int> newnodeandkey) {
 	//increase the size after inserting and assign position
 	heap_vector.push_back(newnodeandkey);
-	vertex_positions[newnodeandkey.first] = heap_vector_size;
 	heap_vector_size++;
+	vertex_positions[newnodeandkey.first] = heap_vector_size-1;
 	if(heap_vector_size >= 2)
 		bubbleUp(heap_vector_size-1);
 }
@@ -150,15 +150,17 @@ void Heap::deleteNodeFromHeap(size_t indexToRemove) {
 		heap_vector_size--;
 	}
 	else if(indexToRemove == 0){
-		vertex_positions.erase(heap_vector[indexToRemove].first);
 		swap(indexToRemove, heap_vector_size - 1);
-		bubbleDown(indexToRemove);
+		vertex_positions.erase(heap_vector[heap_vector_size - 1].first);
 		heap_vector.pop_back();
 		heap_vector_size--;
+		bubbleDown(indexToRemove);
 	}
 	else {//index is neither the first or the last element in the vector.
-		vertex_positions.erase(heap_vector[indexToRemove].first);
 		swap(indexToRemove, heap_vector_size - 1);
+		vertex_positions.erase(heap_vector[heap_vector_size - 1].first);
+		heap_vector.pop_back();
+		heap_vector_size--;
 		parentIdx = getParentPosition(indexToRemove);
 		if (heap_vector[indexToRemove].second < heap_vector[parentIdx].second) {
 			bubbleUp(indexToRemove);
@@ -166,7 +168,5 @@ void Heap::deleteNodeFromHeap(size_t indexToRemove) {
 		else {
 			bubbleDown(indexToRemove);
 		}
-		heap_vector.pop_back();
-		heap_vector_size--;
 	}
 }

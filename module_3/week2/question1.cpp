@@ -143,7 +143,7 @@ int main() {
 	}
 	
 	
-	
+	//max spacing for the first question is the min distance between nodes in different clusters
 	cout << "Max spacing of the algorithm is : " << maxSpacing << endl;
 	roots.clear();
 	weights.clear();

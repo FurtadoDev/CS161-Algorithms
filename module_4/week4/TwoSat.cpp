@@ -53,21 +53,25 @@ vector<Clause> clauses;
 unordered_map<int, vector<int>> adjacencyList_forward;
 unordered_map<int, vector<int>> adjacencyList_reverse;
 unordered_set<int> explored;
-stack<int> finished_vertices_increasing_order; //the topmost element finished the fastest
+stack<int> finished_vertices_increasing_order; //the topmost element finished the fastest(this is for the reverse graph)
 
 
 void dfs_reverse(int node);
 void dfs_forward(int node);
 
+bool satScc();
+
+unordered_set<int> scc_vertices_temp;
+
 int main()
 {
-	/*
+	
 	int temp_literal1;
 	int temp_literal2;
 	size_t len;
 	string line;
 	stringstream str_strm;
-	ifstream myfile("C:\\Users\\vrfur\\Desktop\\Algorithms.git\\trunk\\module_4\\module_4_datasets\\week4\\2sat6.txt"); //2sat6.txt
+	ifstream myfile("C:\\Users\\vrfur\\Desktop\\Algorithms.git\\trunk\\module_4\\module_4_datasets\\week4\\test.txt"); //2sat6.txt
 	if (myfile.is_open())
 	{
 		getline(myfile, line);
@@ -171,107 +175,127 @@ int main()
 		}
 	}
 	cout << "the no of clauses after reduction is " << count_clauses << endl;
-	unordered_set<int> literals;
-	for (size_t i = 0; i < num_clauses; i++) {
-		if (clauses[i].remove == false) {
-			literals.insert(clauses[i].literal1);
-			literals.insert(clauses[i].literal2);
-			cout << clauses[i].literal1 << "        " << clauses[i].literal2 << endl;
-		}
-	}
-	cout << "the no of literals after reduction is " << literals.size() << endl;
-	literals.clear();
-	clauses.clear();
-	cout << "Initalization for the forward and reverse adjacency lists are complete" << endl;
 
+	if (count_clauses == 0) {
 
-	cout << "Size of the forward ajacency list is " << adjacencyList_forward.size() << endl;
-	cout << "Size of the reverse adjacency list is " << adjacencyList_reverse.size() << endl;
-	*/
+		cout << "The assignment is satisfiable." << endl;
 
-	
-	
-
-
-
-
-	int temp_from_node;
-	int temp_to_node;
-	size_t len1;
-	string line1;
-	stringstream str_strm1;
-	ifstream myfile1("C:\\Users\\vrfur\\Desktop\\Algorithms.git\\trunk\\module_4\\module_4_datasets\\week4\\adj_test.txt");
-	if (myfile1.is_open())
-	{
-		while (getline(myfile1, line1))
-		{
-			len1 = line1.length();
-			while (line1[len1 - 1] == ' ') { line1.erase(--len1, 1); } //right trim
-			while (line1[0] == ' ') { line1.erase(0, 1); } //left trim
-			str_strm1 << line1; //output the entire line into the string stream
-			str_strm1 >> temp_from_node;
-			str_strm1 >> temp_to_node;
-			adjacencyList_forward[temp_from_node].push_back(temp_to_node);
-			adjacencyList_forward[temp_to_node];
-			adjacencyList_reverse[temp_to_node].push_back(temp_from_node);
-			adjacencyList_reverse[temp_from_node];
-
-			str_strm1.clear();
-		}
-		myfile1.close();
 	}
 	else {
-		std::cout << "Cannot open file" << endl;
-	}
 
-	
-	
-	//1. Run dfs on the reverse graph
-	unordered_set<int>::iterator explored_itr;
-	for (auto& it : adjacencyList_reverse) {
-		explored_itr = explored.find(it.first);
-		if (explored_itr == explored.end()) { //not explored
-			dfs_reverse(it.first);
+
+		unordered_set<int> literals;
+		for (size_t i = 0; i < num_clauses; i++) {
+			if (clauses[i].remove == false) {
+				literals.insert(clauses[i].literal1);
+				literals.insert(clauses[i].literal2);
+				cout << clauses[i].literal1 << "        " << clauses[i].literal2 << endl;
+			}
 		}
+		cout << "the no of literals after reduction is " << literals.size() << endl;
+		literals.clear();
+		clauses.clear();
+		cout << "Initalization for the forward and reverse adjacency lists are complete" << endl;
+
+
+		cout << "Size of the forward ajacency list is " << adjacencyList_forward.size() << endl;
+		cout << "Size of the reverse adjacency list is " << adjacencyList_reverse.size() << endl;
+
+
+		/*
+		int temp_from_node;
+		int temp_to_node;
+		size_t len1;
+		string line1;
+		stringstream str_strm1;
+		ifstream myfile1("C:\\Users\\vrfur\\Desktop\\Algorithms.git\\trunk\\module_4\\module_4_datasets\\week4\\adj_test.txt");
+		if (myfile1.is_open())
+		{
+			while (getline(myfile1, line1))
+			{
+				len1 = line1.length();
+				while (line1[len1 - 1] == ' ') { line1.erase(--len1, 1); } //right trim
+				while (line1[0] == ' ') { line1.erase(0, 1); } //left trim
+				str_strm1 << line1; //output the entire line into the string stream
+				str_strm1 >> temp_from_node;
+				str_strm1 >> temp_to_node;
+				adjacencyList_forward[temp_from_node].push_back(temp_to_node);
+				adjacencyList_forward[temp_to_node];
+				adjacencyList_reverse[temp_to_node].push_back(temp_from_node);
+				adjacencyList_reverse[temp_from_node];
+
+				str_strm1.clear();
+			}
+			myfile1.close();
+		}
+		else {
+			std::cout << "Cannot open file" << endl;
+		}*/
+
+
+
+		//1. Run dfs on the reverse graph
+		unordered_set<int>::iterator explored_itr;
+		for (auto& it : adjacencyList_reverse) {
+			explored_itr = explored.find(it.first);
+			if (explored_itr == explored.end()) { //not explored
+				dfs_reverse(it.first);
+			}
+		}
+
+		//2. clear the explored set
+		explored.clear();
+
+
+		//3. Run dfs on the forward graph by
+		size_t scc_count = 0;
+		bool sat = false;
+		while (!finished_vertices_increasing_order.empty()) {
+			int top_node = finished_vertices_increasing_order.top();
+			finished_vertices_increasing_order.pop();
+			explored_itr = explored.find(top_node);
+			if (explored_itr == explored.end()) { //not explored yet
+				cout << top_node << endl;
+				scc_count++;
+				dfs_forward(top_node);
+				sat = satScc();
+				if (!sat)
+					break;
+			}
+			scc_vertices_temp.clear();
+		}
+		scc_vertices_temp.clear();
+
+		explored.clear();
+
+		cout << "The no of sccs in the graph are : " << scc_count << endl;
+
+
+		if (sat) {
+			cout << "The assignment is satisfiable." << endl;
+		}
+		else {
+			cout << "The assignment is not satisfiable." << endl;
+		}
+
+
+		/* TEST CODE
+		size_t temp_vector_size;
+		for (auto& it : adjacencyList_forward) {
+			temp_vector_size = it.second.size();
+			if (temp_vector_size == 0) {
+				cout << it.first << " has no outgoing edges" << endl;
+			}
+		}
+		for (auto& it : adjacencyList_reverse) {
+			temp_vector_size = it.second.size();
+			if (temp_vector_size == 0) {
+				cout << it.first << " has no outgoing edges" << endl;
+			}
+		}*/
+		
 	}
 	
-	//2. clear the explored set
-	explored.clear();
-
-
-	//3. Run dfs on the forward graph by
-	size_t scc_count = 0;
-	while (!finished_vertices_increasing_order.empty()) {
-		int top_node = finished_vertices_increasing_order.top();
-		finished_vertices_increasing_order.pop();
-		explored_itr = explored.find(top_node);
-		if (explored_itr == explored.end()) {
-			cout << top_node << endl;
-			scc_count++;
-			dfs_forward(top_node);
-		}
-	}
-
-	explored.clear();
-
-	cout << "The no of sccs in the graph are : " << scc_count << endl;
-
-
-	
-	/*
-	size_t temp_vector_size;
-	for (auto& it : adjacencyList_forward) {
-		temp_vector_size = it.second.size();
-		if (temp_vector_size == 0) {
-			cout << it.first << " has no outgoing edges" << endl;
-		}
-	}
-	for (auto& it : adjacencyList_reverse) {
-		temp_vector_size = it.second.size();
-		if (temp_vector_size == 0) {
-			cout << it.first << " has no outgoing edges" << endl;
-		}
-	}*/
 	
 	//clear the adjacency lists
 	for (auto& it : adjacencyList_forward) {
@@ -315,9 +339,23 @@ void dfs_forward(int node) {
 	itr = explored.find(node);
 	if (itr == explored.end()) { //not explored yet
 		explored.insert(node); //mark it as explored
+		scc_vertices_temp.insert(node);
 		vector_size = adjacencyList_forward[node].size();
 		for (size_t i = 0; i < vector_size; i++) {
 			dfs_forward(adjacencyList_forward[node][i]);
 		}
 	}
+}
+
+
+bool satScc() {
+	
+	unordered_set<int>::iterator itr;
+	for (const auto& node : scc_vertices_temp) {
+		itr = scc_vertices_temp.find(-node);
+		if (itr != scc_vertices_temp.end()) { //that means the node and it's negation are present in the same scc
+			return false;
+		}
+	}
+	return true;
 }
